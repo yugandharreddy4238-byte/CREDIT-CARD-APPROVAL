@@ -1,0 +1,11 @@
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+xgboost>=1.7
+matplotlib>=3.7
+joblib>=1.3
+flask>=3.0
+
+# Optional — only needed for the IBM Watson Machine Learning deployment
+# pipeline in deployment/ibm_watson_deploy.py
+ibm-watson-machine-learning>=1.0.320

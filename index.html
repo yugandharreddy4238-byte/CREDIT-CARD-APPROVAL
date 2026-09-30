@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Card Approval — Underwriting Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="ledger-bg"></div>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="crest">
+      <svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true">
+        <rect x="4" y="4" width="40" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M14 30 L24 14 L34 30 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="24" cy="26" r="2.4" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="masthead-text">
+      <p class="eyebrow">Underwriting Desk</p>
+      <h1>Credit Card Approval Screening</h1>
+    </div>
+    <div class="masthead-model">
+      <span class="model-label">Active model</span>
+      <span class="model-name">{{ model_name }}</span>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <section class="form-panel">
+    <p class="panel-kicker">Applicant Dossier</p>
+    <p class="panel-sub">Enter the applicant's profile exactly as it appears on the application. The model returns a decision instantly — no queue, no manual review needed for clear-cut cases.</p>
+
+    <form method="POST" action="{{ url_for('predict') }}" class="dossier-form">
+
+      <fieldset>
+        <legend>Personal</legend>
+        <div class="field-grid">
+          <label class="field">
+            <span>Gender</span>
+            <select name="gender" required>
+              {% for g in options.gender %}
+              <option value="{{ g }}" {% if form_data and form_data.gender==g %}selected{% endif %}>{{ 'Male' if g=='M' else 'Female' }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">
+            <span>Age (years)</span>
+            <input type="number" name="age_years" min="18" max="100" step="1" required
+              value="{{ form_data.age_years if form_data else 34 }}">
+          </label>
+          <label class="field">
+            <span>Family status</span>
+            <select name="family_status" required>
+              {% for f in options.family_status %}
+              <option value="{{ f }}" {% if form_data and form_data.family_status==f %}selected{% endif %}>{{ f }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">
+            <span>Children</span>
+            <input type="number" name="cnt_children" min="0" max="10" step="1" required
+              value="{{ form_data.cnt_children if form_data else 0 }}">
+          </label>
+          <label class="field">
+            <span>Family members (total)</span>
+            <input type="number" name="cnt_fam_members" min="1" max="12" step="1" required
+              value="{{ form_data.cnt_fam_members if form_data else 2 }}">
+          </label>
+          <label class="field">
+            <span>Education</span>
+            <select name="education_type" required>
+              {% for e in options.education %}
+              <option value="{{ e }}" {% if form_data and form_data.education_type==e %}selected{% endif %}>{{ e }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Income &amp; Employment</legend>
+        <div class="field-grid">
+          <label class="field">
+            <span>Annual income</span>
+            <input type="number" name="income" min="0" step="1000" required
+              value="{{ form_data.income if form_data else 220000 }}">
+          </label>
+          <label class="field">
+            <span>Income type</span>
+            <select name="income_type" required>
+              {% for it in options.income_type %}
+              <option value="{{ it }}" {% if form_data and form_data.income_type==it %}selected{% endif %}>{{ it }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">
+            <span>Occupation</span>
+            <select name="occupation_type" required>
+              {% for o in options.occupation %}
+              <option value="{{ o }}" {% if form_data and form_data.occupation_type==o %}selected{% endif %}>{{ o }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">
+            <span>Years employed</span>
+            <input type="number" name="years_employed" min="0" max="50" step="0.5" required
+              value="{{ form_data.years_employed if form_data else 5 }}">
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Housing &amp; Assets</legend>
+        <div class="field-grid">
+          <label class="field">
+            <span>Housing type</span>
+            <select name="housing_type" required>
+              {% for h in options.housing_type %}
+              <option value="{{ h }}" {% if form_data and form_data.housing_type==h %}selected{% endif %}>{{ h }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">
+            <span>Owns real estate</span>
+            <select name="own_realty" required>
+              {% for y in options.yes_no %}
+              <option value="{{ y }}" {% if form_data and form_data.own_realty==y %}selected{% endif %}>{{ 'Yes' if y=='Y' else 'No' }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">
+            <span>Owns a car</span>
+            <select name="own_car" required>
+              {% for y in options.yes_no %}
+              <option value="{{ y }}" {% if form_data and form_data.own_car==y %}selected{% endif %}>{{ 'Yes' if y=='Y' else 'No' }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Contact on File</legend>
+        <div class="checkbox-row">
+          <label class="checkbox">
+            <input type="checkbox" name="flag_work_phone" value="1" {% if form_data and form_data.get('flag_work_phone') %}checked{% endif %}>
+            <span>Work phone</span>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" name="flag_phone" value="1" {% if form_data and form_data.get('flag_phone') %}checked{% endif %}>
+            <span>Home phone</span>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" name="flag_email" value="1" {% if form_data and form_data.get('flag_email') %}checked{% endif %}>
+            <span>Email</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="submit-btn">Screen Application</button>
+    </form>
+
+    {% if error %}
+    <p class="error-msg">{{ error }}</p>
+    {% endif %}
+  </section>
+
+  <aside class="verdict-panel">
+    <p class="panel-kicker">Decision</p>
+
+    {% if result %}
+      <div class="stamp-wrap">
+        <div class="stamp {{ 'stamp-approve' if result.is_approved else 'stamp-reject' }}">
+          {{ 'APPROVED' if result.is_approved else 'REJECTED' }}
+        </div>
+      </div>
+
+      <dl class="verdict-meta">
+        <div class="meta-row">
+          <dt>Model confidence</dt>
+          <dd>{{ result.confidence }}%</dd>
+        </div>
+        <div class="meta-row">
+          <dt>Estimated default risk</dt>
+          <dd>{{ result.risk_probability }}%</dd>
+        </div>
+        <div class="meta-row">
+          <dt>Model used</dt>
+          <dd>{{ result.model_name }}</dd>
+        </div>
+      </dl>
+
+      <div class="risk-bar">
+        <div class="risk-bar-fill" style="width: {{ result.risk_probability }}%"></div>
+      </div>
+      <p class="risk-caption">Risk probability — lower is safer for approval.</p>
+
+    {% else %}
+      <div class="verdict-empty">
+        <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true">
+          <rect x="10" y="8" width="44" height="48" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="18" y1="20" x2="46" y2="20" stroke="currentColor" stroke-width="2"/>
+          <line x1="18" y1="30" x2="46" y2="30" stroke="currentColor" stroke-width="2"/>
+          <line x1="18" y1="40" x2="34" y2="40" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <p>No application screened yet. Fill out the dossier and submit to see the underwriting decision here.</p>
+      </div>
+    {% endif %}
+  </aside>
+
+</main>
+
+<footer class="site-footer">
+  <p>Automated Credit Card Approval System — trained on Logistic Regression, Random Forest, XGBoost &amp; Decision Tree; best performer deployed above.</p>
+</footer>
+
+</body>
+</html>
